@@ -1,0 +1,76 @@
+name = "alleato-backend"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Development environment (default)
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Staging environment
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+
+# Production environment
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "STREAMS"
+id = "edb32b0ffbd544dd86afd3841110dc59"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "YOUR_SESSIONS_KV_ID" # Create this for user sessions
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_CACHE_KV_ID" # Create this for caching
+
+# R2 Buckets
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "alleato"
+
+# D1 Databases
+[[d1_databases]]
+binding = "DB"
+database_name = "alleato"
+database_id = "fc7c9a6d-ca65-4768-b3f9-07ec5afb38c5"
+
+# Durable Objects (for real-time features)
+[[durable_objects.bindings]]
+name = "CHAT_ROOMS"
+class_name = "ChatRoom"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ChatRoom"]
+
+# Rate limiting
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1"
+simple = { limit = 100, period = 60 }
+
+# Environment Variables
+[vars]
+# API Configuration
+API_VERSION = "v1"
+CORS_ORIGIN = "*" # Update for production
+
+# AI Configuration
+AI_PROVIDER = "openai"
+AI_CHAT_MODEL = "gpt-5"
+AI_REASONING_MODEL = "o1"
+AI_TITLE_MODEL = "gpt-4o-mini"
+
+# Security
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION = "7d"
+
+# Secrets (use wrangler secret put)
+# OPENAI_API_KEY
+# JWT_SECRET
+# ADMIN_API_KEY
