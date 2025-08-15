@@ -31,6 +31,9 @@ export interface Env {
   OPENAI_API_KEY: string;
   JWT_SECRET: string;
   ADMIN_API_KEY: string;
+  
+  // R2 Configuration
+  R2_PUBLIC_URL?: string;
 }
 
 // Request context with authenticated user

@@ -1,8 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
-import { streamText } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import { requireAuth } from '../middleware/auth';
 import { ChatService } from '../services/chat';
 import type { Env, AuthenticatedContext } from '../types/env';
@@ -47,11 +45,10 @@ chatRouter.post('/', zValidator('json', createChatSchema), async (c) => {
   const data = c.req.valid('json');
   const chatService = new ChatService(c.env);
   
-  const chat = await chatService.createChat({
-    userId: user.userId,
-    title: data.title || 'New Chat',
-    visibility: data.visibility,
-  });
+  const chat = await chatService.createChat(
+    user.userId,
+    data.title || 'New Chat'
+  );
   
   return c.json({ chat }, 201);
 });
@@ -83,35 +80,37 @@ chatRouter.post('/:id/messages', zValidator('json', sendMessageSchema), async (c
     return c.json({ error: 'Chat not found' }, 404);
   }
   
-  // Create AI model instance
-  const model = openai(data.model || c.env.AI_CHAT_MODEL);
-  
-  // Stream the response
-  const result = await streamText({
-    model,
-    messages: data.messages,
-    onFinish: async ({ text }) => {
-      // Save assistant message
-      await chatService.addMessage({
-        chatId,
-        role: 'assistant',
-        content: text,
-      });
-    },
-  });
-  
   // Save user message
   const lastUserMessage = data.messages.filter(m => m.role === 'user').pop();
   if (lastUserMessage) {
-    await chatService.addMessage({
-      chatId,
-      role: 'user',
-      content: lastUserMessage.content,
-    });
+    await chatService.addMessage(chatId, 'user', lastUserMessage.content);
   }
   
-  // Return the stream
-  return new Response(result.toAIStream(), {
+  // Create a readable stream for the response
+  const stream = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      
+      try {
+        // Use the streaming method from ChatService
+        const messageStream = chatService.streamMessage(
+          chatId,
+          lastUserMessage?.content || ''
+        );
+        
+        for await (const chunk of messageStream) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: chunk })}\n\n`));
+        }
+        
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+  });
+  
+  return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
@@ -126,10 +125,7 @@ chatRouter.delete('/:id', async (c) => {
   const chatId = c.req.param('id');
   const chatService = new ChatService(c.env);
   
-  const deleted = await chatService.deleteChat(chatId, user.userId);
-  if (!deleted) {
-    return c.json({ error: 'Chat not found' }, 404);
-  }
+  await chatService.deleteChat(chatId, user.userId);
   
   return c.json({ message: 'Chat deleted' });
 });

@@ -21,11 +21,11 @@ id = "edb32b0ffbd544dd86afd3841110dc59"
 
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "YOUR_SESSIONS_KV_ID" # Create this for user sessions
+id = "05ed419124d641348de9eb8a95c2e51c"
 
 [[kv_namespaces]]
 binding = "CACHE"
-id = "YOUR_CACHE_KV_ID" # Create this for caching
+id = "246a76714a2a49d5852dd7831dd6d731"
 
 # R2 Buckets
 [[r2_buckets]]
@@ -39,13 +39,14 @@ database_name = "alleato"
 database_id = "fc7c9a6d-ca65-4768-b3f9-07ec5afb38c5"
 
 # Durable Objects (for real-time features)
-[[durable_objects.bindings]]
-name = "CHAT_ROOMS"
-class_name = "ChatRoom"
-
-[[migrations]]
-tag = "v1"
-new_classes = ["ChatRoom"]
+# TODO: Uncomment when ChatRoom class is implemented
+# [[durable_objects.bindings]]
+# name = "CHAT_ROOMS"
+# class_name = "ChatRoom"
+#
+# [[migrations]]
+# tag = "v1"
+# new_classes = ["ChatRoom"]
 
 # Rate limiting
 [[unsafe.bindings]]

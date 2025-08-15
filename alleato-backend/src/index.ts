@@ -106,4 +106,5 @@ app.notFound((c) => {
 export default app;
 
 // Export Durable Object classes
-export { ChatRoom } from './durable-objects/chat-room';
+// TODO: Uncomment when ChatRoom is implemented
+// export { ChatRoom } from './durable-objects/chat-room';
