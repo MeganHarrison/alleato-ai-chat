@@ -18,3 +18,9 @@ export const chatModels: Array<ChatModel> = [
     description: 'Uses advanced reasoning',
   },
 ];
+
+export function modelHasVision(modelId: string): boolean {
+  // For now, assume all models support vision
+  // You can update this logic based on your actual model capabilities
+  return modelId !== 'chat-model-reasoning';
+}

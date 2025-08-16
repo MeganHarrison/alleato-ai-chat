@@ -4,11 +4,11 @@ import { drizzle as drizzlePostgres } from 'drizzle-orm/postgres-js';
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import postgres from 'postgres';
 import * as schema from './schema';
-import { useCloudflareService } from '../config/cloudflare';
+import { isCloudflareServiceEnabled } from '../config/cloudflare';
 
 // Database adapter that switches between PostgreSQL and D1
 export function getDatabase() {
-  const useCloudflareDB = useCloudflareService('database');
+  const useCloudflareDB = isCloudflareServiceEnabled('database');
   
   if (useCloudflareDB) {
     // For D1, we need to use the Cloudflare Worker API

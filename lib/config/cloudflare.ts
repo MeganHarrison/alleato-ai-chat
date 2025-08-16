@@ -30,6 +30,6 @@ export const cloudflareConfig = {
 };
 
 // Helper to check if a specific Cloudflare service is enabled
-export function useCloudflareService(service: keyof typeof cloudflareConfig.services): boolean {
+export function isCloudflareServiceEnabled(service: keyof typeof cloudflareConfig.services): boolean {
   return cloudflareConfig.enabled && cloudflareConfig.services[service];
 }

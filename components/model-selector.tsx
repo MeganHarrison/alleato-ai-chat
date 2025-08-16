@@ -1,105 +1,80 @@
 'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from 'react';
-
-import { saveChatModelAsCookie } from '@/app/(chat)/actions';
-import { Button } from '@/components/ui/button';
+import { useAvailableModels } from '@/hooks/use-available-models';
+import { Loader2, ChevronDown } from 'lucide-react';
+import { DEFAULT_MODEL } from '@/lib/constants';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
-import { cn } from '@/lib/utils';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+} from '@/components/ui/select';
+import { memo } from 'react';
 
-import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import type { Session } from 'next-auth';
+type ModelSelectorProps = {
+  modelId: string;
+  onModelChange: (modelId: string) => void;
+};
 
-export function ModelSelector({
-  session,
-  selectedModelId,
-  className,
-}: {
-  session: Session;
-  selectedModelId: string;
-} & React.ComponentProps<typeof Button>) {
-  const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
-
-  const userType = session.user.type;
-  const { availableChatModelIds } = entitlementsByUserType[userType];
-
-  const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
-  );
-
-  const selectedChatModel = useMemo(
-    () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
-      ),
-    [optimisticModelId, availableChatModels],
-  );
+export const ModelSelector = memo(function ModelSelector({
+  modelId = DEFAULT_MODEL,
+  onModelChange,
+}: ModelSelectorProps) {
+  const { models, isLoading, error } = useAvailableModels();
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
-        asChild
-        className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
-        )}
+    <Select
+      value={modelId}
+      onValueChange={onModelChange}
+      disabled={isLoading || !!error || !models?.length}
+    >
+      <SelectTrigger className="w-9 h-9 md:w-[140px] border-0 bg-transparent focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:outline-none focus:border-0 focus-visible:border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl font-medium text-sm p-0 md:px-3 [&_[data-placeholder]]:hidden md:[&_[data-placeholder]]:block [&>svg]:hidden md:[&>svg]:block">
+        <div className="flex items-center justify-center w-full h-full md:hidden">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+        <div className="hidden md:flex items-center gap-2 w-full">
+          {isLoading ? (
+            <>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span className="text-sm">Loading</span>
+            </>
+          ) : error ? (
+            <span className="text-red-500 text-sm">Error</span>
+          ) : !models?.length ? (
+            <span className="text-sm">No models</span>
+          ) : (
+            <SelectValue placeholder="Select model" />
+          )}
+        </div>
+      </SelectTrigger>
+
+      <SelectContent
+        className="rounded-2xl border-0 shadow-border-medium bg-popover/95 backdrop-blur-sm animate-scale-in"
+        align="start"
+        sideOffset={4}
       >
-        <Button
-          data-testid="model-selector"
-          variant="outline"
-          className="md:px-2 md:h-[34px]"
-        >
-          {selectedChatModel?.name}
-          <ChevronDownIcon />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[300px]">
-        {availableChatModels.map((chatModel) => {
-          const { id } = chatModel;
-
-          return (
-            <DropdownMenuItem
-              data-testid={`model-selector-item-${id}`}
-              key={id}
-              onSelect={() => {
-                setOpen(false);
-
-                startTransition(() => {
-                  setOptimisticModelId(id);
-                  saveChatModelAsCookie(id);
-                });
-              }}
-              data-active={id === optimisticModelId}
-              asChild
+        <SelectGroup>
+          <SelectLabel className="text-xs text-muted-foreground px-2 py-1">
+            Models
+          </SelectLabel>
+          {models?.map((model) => (
+            <SelectItem
+              key={model.id}
+              value={model.id}
+              className="rounded-lg transition-colors duration-150 ease-out"
             >
-              <button
-                type="button"
-                className="gap-4 group/item flex flex-row justify-between items-center w-full"
-              >
-                <div className="flex flex-col gap-1 items-start">
-                  <div>{chatModel.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {chatModel.description}
-                  </div>
-                </div>
-
-                <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-                  <CheckCircleFillIcon />
-                </div>
-              </button>
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+              {model.label}
+            </SelectItem>
+          )) || []}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
-}
+});

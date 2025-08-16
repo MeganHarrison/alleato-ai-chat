@@ -1,0 +1,29 @@
+name = "notion-sync"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "alleato"
+database_id = "fc7c9a6d-ca65-4768-b3f9-07ec5afb38c5"
+
+# Queue for sync jobs
+[[queues.producers]]
+binding = "SYNC_QUEUE"
+queue = "notion-sync-queue"
+
+[[queues.consumers]]
+queue = "notion-sync-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+
+# Environment variables
+[vars]
+# Set NOTION_TOKEN as a secret using: wrangler secret put NOTION_TOKEN
+NOTION_PROJECTS_DB_ID = "18fee3c6d9968192a666fe6b55e99f52"
+NOTION_MEETINGS_DB_ID = "fb73a7587ceb44dfaa7be6713930a705"
+
+# Scheduled trigger for periodic sync
+[triggers]
+crons = ["*/5 * * * *"]  # Run every 5 minutes

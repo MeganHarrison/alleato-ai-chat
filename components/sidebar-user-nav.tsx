@@ -2,9 +2,10 @@
 
 import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
-import type { User } from 'next-auth';
-import { signOut, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
 
 import {
   DropdownMenu,
@@ -23,19 +24,30 @@ import { toast } from './toast';
 import { LoaderIcon } from './icons';
 import { guestRegex } from '@/lib/constants';
 
-export function SidebarUserNav({ user }: { user: User }) {
+export function SidebarUserNav({ user: initialUser }: { user: User | null | undefined }) {
   const router = useRouter();
-  const { data, status } = useSession();
   const { setTheme, resolvedTheme } = useTheme();
+  const [user, setUser] = useState<User | null>(initialUser || null);
+  const [loading, setLoading] = useState(!initialUser);
+  const supabase = createClient();
 
-  const isGuest = guestRegex.test(data?.user?.email ?? '');
+  useEffect(() => {
+    if (!initialUser) {
+      supabase.auth.getUser().then(({ data }) => {
+        setUser(data.user);
+        setLoading(false);
+      });
+    }
+  }, [initialUser]);
+
+  const isGuest = user?.email ? guestRegex.test(user.email) : false;
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            {status === 'loading' ? (
+            {loading ? (
               <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10 justify-between">
                 <div className="flex flex-row gap-2">
                   <div className="size-6 bg-zinc-500/30 rounded-full animate-pulse" />
@@ -53,8 +65,8 @@ export function SidebarUserNav({ user }: { user: User }) {
                 className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10"
               >
                 <Image
-                  src={`https://avatar.vercel.sh/${user.email}`}
-                  alt={user.email ?? 'User Avatar'}
+                  src={`https://avatar.vercel.sh/${user?.email || 'user'}`}
+                  alt={user?.email ?? 'User Avatar'}
                   width={24}
                   height={24}
                   className="rounded-full"
@@ -83,8 +95,8 @@ export function SidebarUserNav({ user }: { user: User }) {
               <button
                 type="button"
                 className="w-full cursor-pointer"
-                onClick={() => {
-                  if (status === 'loading') {
+                onClick={async () => {
+                  if (loading) {
                     toast({
                       type: 'error',
                       description:
@@ -94,12 +106,12 @@ export function SidebarUserNav({ user }: { user: User }) {
                     return;
                   }
 
-                  if (isGuest) {
+                  if (isGuest || !user) {
                     router.push('/login');
                   } else {
-                    signOut({
-                      redirectTo: '/',
-                    });
+                    await supabase.auth.signOut();
+                    router.push('/');
+                    router.refresh();
                   }
                 }}
               >

@@ -1,0 +1,15 @@
+
+> ai-chatbot@3.1.0 dev /Users/meganharrison/Documents/github/alleato-ai-chat
+> next dev --turbo "--port" "3003"
+
+ ⨯ Failed to start server
+Error: listen EADDRINUSE: address already in use :::3003
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3003)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 3003
+}
+[?25h

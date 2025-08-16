@@ -1,0 +1,36 @@
+
+> ai-chatbot@3.1.0 dev /Users/meganharrison/Documents/github/alleato-ai-chat
+> next dev --turbo
+
+   ▲ Next.js 15.3.0-canary.31 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.95:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ ppr
+
+ ✓ Starting...
+ ✓ Compiled in 458ms
+ ✓ Ready in 1111ms
+ ✓ Compiled middleware in 8ms
+ ✓ Compiled in 5ms
+   Reload env: .env.local
+   Reload env: .env.local
+   Reload env: .env.local
+ ✓ Compiled middleware in 11ms
+ ✓ Compiled in 88ms
+   Reload env: .env.local
+   Reload env: .env.local
+   Reload env: .env.local
+   Reload env: .env.local
+   Reload env: .env.local
+   Reload env: .env.local
+   Reload env: .env.local
+ ✓ Compiled middleware in 33ms
+ ✓ Compiled in 54ms
+[Error: ENOENT: no such file or directory, open '/Users/meganharrison/Documents/github/alleato-ai-chat/.next/static/development/_buildManifest.js.tmp.1ctzn3ay1gi'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/meganharrison/Documents/github/alleato-ai-chat/.next/static/development/_buildManifest.js.tmp.1ctzn3ay1gi'
+}

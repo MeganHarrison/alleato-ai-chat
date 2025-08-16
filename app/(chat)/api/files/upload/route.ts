@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { cloudflareClient } from '@/lib/cloudflare/client';
 
 // Use Blob instead of File since File is not available in Node.js environment
@@ -48,8 +48,8 @@ export async function POST(request: Request) {
 
     try {
       // Use Cloudflare R2 instead of Vercel Blob
-      const { useCloudflareService } = await import('@/lib/config/cloudflare');
-      const useCloudflareStorage = useCloudflareService('storage');
+      const { isCloudflareServiceEnabled } = await import('@/lib/config/cloudflare');
+      const useCloudflareStorage = isCloudflareServiceEnabled('storage');
       
       if (useCloudflareStorage) {
         // Upload to Cloudflare R2 via Worker
